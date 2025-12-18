@@ -122,16 +122,10 @@ export async function sendVerificationEmail(
   verificationToken: string,
   platform: 'web' | 'mobile' = 'web'
 ) {
-  let verificationLink: string;
-
-  if (platform === 'mobile') {
-    // Deep link for mobile app
-    verificationLink = `hippiekit://verify-email?token=${verificationToken}`;
-  } else {
-    // Web URL for browser
-    const baseURL = process.env.CLIENT_URL || 'http://localhost:5173';
-    verificationLink = `${baseURL}/verify-email?token=${verificationToken}`;
-  }
+  // ALWAYS use HTTPS link in emails (email clients block custom schemes)
+  // The web page will detect mobile and attempt to open the app
+  const baseURL = process.env.CLIENT_URL || 'http://localhost:5173';
+  const verificationLink = `${baseURL}/verify-email?token=${verificationToken}`;
 
   const html = createVerificationEmail(verificationLink);
 
