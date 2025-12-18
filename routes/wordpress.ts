@@ -42,6 +42,27 @@ router.get('/products', async (req: Request, res: Response) => {
   }
 });
 
+// Fetch single product by ID with _embed
+router.get('/products/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const url = `${WP_BASE_URL}/products/${encodeURIComponent(id)}?_embed`;
+    const response = await axios.get(url);
+    res.json(response.data);
+  } catch (error) {
+    console.error('WordPress API error:', error);
+    const status = (error as any)?.response?.status || 500;
+    if (status === 404) {
+      res.status(404).json({ success: false, message: 'Product not found' });
+      return;
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch product',
+    });
+  }
+});
+
 router.get('/media/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
