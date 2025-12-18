@@ -22,8 +22,15 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   session.startTransaction();
 
   try {
-    const { provider, providerAccountId, name, email, password, phoneNumber } =
-      req.body;
+    const {
+      provider,
+      providerAccountId,
+      name,
+      email,
+      password,
+      phoneNumber,
+      platform = 'web',
+    } = req.body;
 
     // Validate fields for credentials provider
     if (provider === 'credentials' && !password) {
@@ -83,9 +90,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     await session.commitTransaction();
     session.endSession();
 
-    // Send verification email
+    // Send verification email with platform parameter
     try {
-      await sendVerificationEmail(email, verificationToken);
+      await sendVerificationEmail(
+        email,
+        verificationToken,
+        platform as 'web' | 'mobile'
+      );
       console.log('✅ Verification email sent to:', email);
     } catch (emailError) {
       console.error('⚠️ Failed to send verification email:', emailError);
@@ -734,6 +745,88 @@ export const verifyEmail = async (
     return;
   } catch (error) {
     console.error('Email verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'An error occurred',
+    });
+    return;
+  }
+};
+
+// @desc    Resend verification email
+// @route   POST /api/auth/resend-verification
+// @access  Public
+export const resendVerification = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  await connectDB();
+
+  try {
+    const { email, platform = 'web' } = req.body;
+
+    if (!email) {
+      res.status(400).json({
+        success: false,
+        message: 'Email is required',
+      });
+      return;
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // For security, don't reveal if user exists
+      res.status(200).json({
+        success: true,
+        message:
+          'If your email is registered, you will receive a verification link.',
+      });
+      return;
+    }
+
+    // Check if already verified
+    if (user.isVerified) {
+      res.status(400).json({
+        success: false,
+        message: 'Email is already verified',
+      });
+      return;
+    }
+
+    // Generate new verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpiry = verificationTokenExpiry;
+    await user.save();
+
+    // Send verification email with platform parameter
+    try {
+      await sendVerificationEmail(
+        email,
+        verificationToken,
+        platform as 'web' | 'mobile'
+      );
+      console.log('✅ Verification email resent to:', email);
+    } catch (emailError) {
+      console.error('⚠️ Failed to resend verification email:', emailError);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to send verification email',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Verification email sent! Please check your inbox.',
+    });
+    return;
+  } catch (error) {
+    console.error('Resend verification error:', error);
     res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'An error occurred',

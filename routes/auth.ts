@@ -8,6 +8,7 @@ import {
   resetPassword,
   verifyOTP,
   verifyEmail,
+  resendVerification,
   googleSignIn,
   googleOAuthInitiate,
   googleOAuthCallback,
@@ -20,6 +21,7 @@ const router: Router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
 router.get('/verify-email/:token', verifyEmail);
+router.post('/resend-verification', resendVerification);
 router.post('/forgot-password', forgotPassword);
 router.post('/verify-otp', verifyOTP);
 router.post('/reset-password', resetPassword);

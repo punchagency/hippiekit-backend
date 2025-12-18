@@ -120,9 +120,19 @@ export async function sendEmail({ to, subject, text, html }: SendEmailParams) {
 export async function sendVerificationEmail(
   email: string,
   verificationToken: string,
-  baseURL: string = process.env.CLIENT_URL || 'http://localhost:5173'
+  platform: 'web' | 'mobile' = 'web'
 ) {
-  const verificationLink = `${baseURL}/verify-email?token=${verificationToken}`;
+  let verificationLink: string;
+
+  if (platform === 'mobile') {
+    // Deep link for mobile app
+    verificationLink = `hippiekit://verify-email?token=${verificationToken}`;
+  } else {
+    // Web URL for browser
+    const baseURL = process.env.CLIENT_URL || 'http://localhost:5173';
+    verificationLink = `${baseURL}/verify-email?token=${verificationToken}`;
+  }
+
   const html = createVerificationEmail(verificationLink);
 
   return sendEmail({
