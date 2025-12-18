@@ -3,7 +3,8 @@ import axios from 'axios';
 
 const router: Router = express.Router();
 
-const WP_BASE_URL = 'https://dodgerblue-otter-660921.hostingersite.com/wp-json/wp/v2';
+const WP_BASE_URL =
+  'https://dodgerblue-otter-660921.hostingersite.com/wp-json/wp/v2';
 
 // Proxy WordPress API requests
 router.get('/categories', async (req: Request, res: Response) => {
@@ -16,9 +17,9 @@ router.get('/categories', async (req: Request, res: Response) => {
     res.json(response.data);
   } catch (error) {
     console.error('WordPress API error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch categories' 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch categories',
     });
   }
 });
@@ -27,7 +28,7 @@ router.get('/products', async (req: Request, res: Response) => {
   try {
     const { page = '1', per_page = '6', search, category_id } = req.query;
     let url = `${WP_BASE_URL}/products?page=${page}&per_page=${per_page}&_embed`;
-    
+
     if (search) url += `&search=${encodeURIComponent(search as string)}`;
     if (category_id) url += `&product-categories=${category_id}`;
 
@@ -35,9 +36,9 @@ router.get('/products', async (req: Request, res: Response) => {
     res.json(response.data);
   } catch (error) {
     console.error('WordPress API error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch products' 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch products',
     });
   }
 });
@@ -70,9 +71,9 @@ router.get('/media/:id', async (req: Request, res: Response) => {
     res.json(response.data);
   } catch (error) {
     console.error('WordPress API error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch media' 
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch media',
     });
   }
 });
