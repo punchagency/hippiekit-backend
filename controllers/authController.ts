@@ -41,7 +41,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const existingUser = await User.findOne({ email })
       .select('+password')
       .session(session);
-    
+
     let user;
     let verificationToken: string;
 
@@ -62,14 +62,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
       // Generate new verification token
       verificationToken = crypto.randomBytes(32).toString('hex');
-      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      const verificationTokenExpiry = new Date(
+        Date.now() + 24 * 60 * 60 * 1000
+      ); // 24 hours
 
       // Update user details and verification token
       existingUser.name = name;
       existingUser.phoneNumber = phoneNumber;
       existingUser.verificationToken = verificationToken;
       existingUser.verificationTokenExpiry = verificationTokenExpiry;
-      
+
       // Update password if provided (will be hashed by pre-save hook)
       if (provider === 'credentials' && password) {
         existingUser.password = password;
@@ -102,7 +104,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     } else {
       // Generate verification token
       verificationToken = crypto.randomBytes(32).toString('hex');
-      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      const verificationTokenExpiry = new Date(
+        Date.now() + 24 * 60 * 60 * 1000
+      ); // 24 hours
 
       // Create new user (password hashing handled by pre-save hook)
       const [newUser] = await User.create(
