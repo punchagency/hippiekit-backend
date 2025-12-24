@@ -38,43 +38,91 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Check if user already exists with email
-    const existingUser = await User.findOne({ email }).session(session);
+    const existingUser = await User.findOne({ email })
+      .select('+password')
+      .session(session);
+    
+    let user;
+    let verificationToken: string;
+
     if (existingUser) {
-      res.status(400).json({
-        success: false,
-        message: 'User already exists with this email',
-      });
-      return;
-    }
+      // If user exists and is verified, return error
+      if (existingUser.isVerified) {
+        await session.abortTransaction();
+        session.endSession();
+        res.status(400).json({
+          success: false,
+          message: 'User already exists with this email',
+        });
+        return;
+      }
 
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      // If user exists but is not verified, update and resend verification
+      console.log('📧 Unverified user found, resending verification email');
 
-    // Create new user (password hashing handled by pre-save hook)
-    const [user] = await User.create(
-      [
-        {
-          name,
-          email,
-          password: provider === 'credentials' ? password : undefined,
-          phoneNumber,
-          isVerified: false,
-          verificationToken,
-          verificationTokenExpiry,
-        },
-      ],
-      { session }
-    );
+      // Generate new verification token
+      verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // Link account (no password stored here)
-    const existingAccount = await Account.findOne({
-      userId: user._id,
-      provider,
-      providerAccountId,
-    }).session(session);
+      // Update user details and verification token
+      existingUser.name = name;
+      existingUser.phoneNumber = phoneNumber;
+      existingUser.verificationToken = verificationToken;
+      existingUser.verificationTokenExpiry = verificationTokenExpiry;
+      
+      // Update password if provided (will be hashed by pre-save hook)
+      if (provider === 'credentials' && password) {
+        existingUser.password = password;
+      }
 
-    if (!existingAccount) {
+      await existingUser.save({ session });
+      user = existingUser;
+
+      // Update or create account link
+      const existingAccount = await Account.findOne({
+        userId: user._id,
+        provider,
+      }).session(session);
+
+      if (existingAccount) {
+        existingAccount.providerAccountId = providerAccountId;
+        await existingAccount.save({ session });
+      } else {
+        await Account.create(
+          [
+            {
+              userId: user._id,
+              provider,
+              providerAccountId,
+            },
+          ],
+          { session }
+        );
+      }
+    } else {
+      // Generate verification token
+      verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      // Create new user (password hashing handled by pre-save hook)
+      const [newUser] = await User.create(
+        [
+          {
+            name,
+            email,
+            password: provider === 'credentials' ? password : undefined,
+            phoneNumber,
+            isVerified: false,
+            verificationToken,
+            verificationTokenExpiry,
+          },
+        ],
+        { session }
+      );
+
+      user = newUser;
+
+      // Link account (no password stored here)
       await Account.create(
         [
           {
