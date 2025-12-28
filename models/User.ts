@@ -14,6 +14,7 @@ export interface IUser extends Document {
   resetOTPExpiry?: Date;
   resetPasswordToken?: string;
   resetPasswordExpiry?: Date;
+  searchHistory?: string[];
   comparePassword(candidatePassword: string): Promise<boolean>;
   createdAt: Date;
   updatedAt: Date;
@@ -63,6 +64,11 @@ const userSchema = new Schema<IUser>(
     resetOTPExpiry: Date,
     resetPasswordToken: String,
     resetPasswordExpiry: Date,
+    searchHistory: {
+      type: [String],
+      default: [],
+      maxlength: 10,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt
