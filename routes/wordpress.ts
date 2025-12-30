@@ -9,12 +9,21 @@ const WP_BASE_URL =
 // Proxy WordPress API requests
 router.get('/categories', async (req: Request, res: Response) => {
   try {
-    const { per_page = '100', slug } = req.query;
+    const { per_page = '100', slug, parent } = req.query;
     let url = `${WP_BASE_URL}/product-categories?per_page=${per_page}`;
     if (slug) url += `&slug=${slug}`;
+    if (parent !== undefined) url += `&parent=${parent}`;
 
     const response = await axios.get(url);
-    res.json(response.data);
+
+    // Defensive filter in case WP ignores the parent param
+    const categories = Array.isArray(response.data) ? response.data : [];
+    const filtered =
+      parent !== undefined
+        ? categories.filter((c: any) => Number(c.parent) === Number(parent))
+        : categories;
+
+    res.json(filtered);
   } catch (error) {
     console.error('WordPress API error:', error);
     res.status(500).json({

@@ -17,6 +17,7 @@ export interface WPCategory {
   id: number;
   name: string;
   slug: string;
+  parent: number; // 0 for top-level categories, parent category ID for subcategories
   meta?: { featured_image?: string };
 }
 
