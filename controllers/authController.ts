@@ -785,6 +785,9 @@ export const verifyEmail = async (
 
     console.log('✅ Email verified for:', user.email);
 
+    // Generate JWT token for the verified user
+    const jwtToken = generateToken(user._id.toString());
+
     res.status(200).json({
       success: true,
       message: 'Email verified successfully! You can now login.',
@@ -792,6 +795,7 @@ export const verifyEmail = async (
         _id: user._id,
         name: user.name,
         email: user.email,
+        token: jwtToken,
       },
     });
     return;
