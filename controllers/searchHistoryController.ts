@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import User from '../models/User';
+import { AuthRequest } from '../middleware/auth.js';
+import User from '../models/User.js';
 
 // Get user's search history
 export const getSearchHistory = async (req: AuthRequest, res: Response) => {

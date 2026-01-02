@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { emailOTP, bearer } from 'better-auth/plugins';
 import { MongoClient } from 'mongodb';
-import { sendEmail } from './emailService';
+import { sendEmail } from './emailService.js';
 
 // Lazy initialization - create auth instance only when first accessed
 let authInstance: ReturnType<typeof betterAuth> | null = null;

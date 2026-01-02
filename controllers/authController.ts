@@ -1,16 +1,16 @@
 import { Request, Response } from 'express';
-import User from '../models/User';
-import generateToken from '../utils/generateToken';
+import User from '../models/User.js';
+import generateToken from '../utils/generateToken.js';
 import crypto from 'crypto';
-import { AuthRequest } from '../middleware/auth';
+import { AuthRequest } from '../middleware/auth.js';
 import {
   sendEmail,
   sendVerificationEmail,
   sendOTPEmail,
-} from '../lib/emailService';
-import connectDB from '../config/db';
+} from '../lib/emailService.js';
+import connectDB from '../config/db.js';
 import mongoose from 'mongoose';
-import Account from '../models/Account';
+import Account from '../models/Account.js';
 
 // @desc    Register new user
 // @route   POST /api/auth/register

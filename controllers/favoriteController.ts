@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import connectDB from '../config/db';
-import Favorite from '../models/Favorite';
-import { AuthRequest } from '../middleware/auth';
-import { fetchWPProduct, fetchWPCategoriesByIds } from '../lib/wp';
+import connectDB from '../config/db.js';
+import Favorite from '../models/Favorite.js';
+import { AuthRequest } from '../middleware/auth.js';
+import { fetchWPProduct, fetchWPCategoriesByIds } from '../lib/wp.js';
 
 // POST /api/favorites/:productId
 export const addFavorite = async (
