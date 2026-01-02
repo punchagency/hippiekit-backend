@@ -12,8 +12,8 @@ import {
   googleSignIn,
   googleOAuthInitiate,
   googleOAuthCallback,
-} from '../controllers/authController.js';
-import { protect } from '../middleware/auth.js';
+} from '../controllers/authController';
+import { protect } from '../middleware/auth';
 
 const router: Router = express.Router();
 

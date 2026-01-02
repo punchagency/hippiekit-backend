@@ -4,8 +4,8 @@ import {
   addSearchHistory,
   clearSearchHistory,
   deleteSearchTerm,
-} from '../controllers/searchHistoryController.js';
-import { protect } from '../middleware/auth.js';
+} from '../controllers/searchHistoryController';
+import { protect } from '../middleware/auth';
 
 const router = express.Router();
 

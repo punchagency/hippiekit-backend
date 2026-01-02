@@ -3,12 +3,12 @@ dotenv.config();
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import authRoutes from './routes/auth.js';
-import favoriteRoutes from './routes/favorites.js';
-import wordpressRoutes from './routes/wordpress.js';
-import searchHistoryRoutes from './routes/searchHistory.js';
-import { uploadthingRouteHandler } from './routes/uploadthing.js';
-import connectDB from './config/db.js';
+import authRoutes from './routes/auth';
+import favoriteRoutes from './routes/favorites';
+import wordpressRoutes from './routes/wordpress';
+import searchHistoryRoutes from './routes/searchHistory';
+import { uploadthingRouteHandler } from './routes/uploadthing';
+import connectDB from './config/db';
 
 const PORT = process.env.PORT || 8000;
 const app = express();
