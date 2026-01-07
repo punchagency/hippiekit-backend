@@ -9,19 +9,41 @@ const WP_BASE_URL =
 // Proxy WordPress API requests
 router.get('/categories', async (req: Request, res: Response) => {
   try {
-    const { per_page = '100', slug, parent } = req.query;
-    let url = `${WP_BASE_URL}/product-categories?per_page=${per_page}`;
-    if (slug) url += `&slug=${slug}`;
-    if (parent !== undefined) url += `&parent=${parent}`;
+    const { slug, parent } = req.query;
 
-    const response = await axios.get(url);
+    let allCategories: any[] = [];
+    let page = 1;
+    let hasMore = true;
+
+    // Fetch all pages of categories
+    while (hasMore) {
+      let url = `${WP_BASE_URL}/product-categories?per_page=100&page=${page}`;
+      if (slug) url += `&slug=${slug}`;
+      if (parent !== undefined) url += `&parent=${parent}`;
+
+      const response = await axios.get(url);
+
+      const categories = Array.isArray(response.data) ? response.data : [];
+
+      if (categories.length === 0) {
+        hasMore = false;
+      } else {
+        allCategories = allCategories.concat(categories);
+        page++;
+
+        // Check if there are more pages using the header
+        const totalPages = response.headers['x-wp-totalpages'];
+        if (totalPages && page > parseInt(totalPages)) {
+          hasMore = false;
+        }
+      }
+    }
 
     // Defensive filter in case WP ignores the parent param
-    const categories = Array.isArray(response.data) ? response.data : [];
     const filtered =
       parent !== undefined
-        ? categories.filter((c: any) => Number(c.parent) === Number(parent))
-        : categories;
+        ? allCategories.filter((c: any) => Number(c.parent) === Number(parent))
+        : allCategories;
 
     res.json(filtered);
   } catch (error) {
