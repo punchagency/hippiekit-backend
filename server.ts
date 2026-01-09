@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.js';
 import favoriteRoutes from './routes/favorites.js';
 import wordpressRoutes from './routes/wordpress.js';
 import searchHistoryRoutes from './routes/searchHistory.js';
+import scanResultRoutes from './routes/scanResults.js';
 import { uploadthingRouteHandler } from './routes/uploadthing.js';
 import connectDB from './config/db.js';
 
@@ -88,6 +89,8 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/wordpress', wordpressRoutes);
 // === Search History Routes ===
 app.use('/api/search-history', searchHistoryRoutes);
+// === Scan Results Routes ===
+app.use('/api/scan-results', scanResultRoutes);
 // === UploadThing Routes ===
 app.use('/api/uploadthing', uploadthingRouteHandler);
 
