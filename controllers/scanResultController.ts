@@ -52,7 +52,7 @@ export const saveScanResult: AsyncHandler = async (
       chemicalAnalysis,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: scanResult,
     });
@@ -86,7 +86,7 @@ export const getScanResults: AsyncHandler = async (
 
     const total = await ScanResult.countDocuments({ userId });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: scanResults,
       pagination: {
@@ -126,7 +126,7 @@ export const getScanResultById: AsyncHandler = async (
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: scanResult,
     });
@@ -155,7 +155,7 @@ export const getScanResultsByBarcode: AsyncHandler = async (
       scannedAt: -1,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: scanResults,
     });
@@ -189,7 +189,7 @@ export const deleteScanResult: AsyncHandler = async (
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Scan result deleted successfully',
     });
@@ -215,7 +215,7 @@ export const deleteAllScanResults: AsyncHandler = async (
 
     await ScanResult.deleteMany({ userId });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'All scan results deleted successfully',
     });
@@ -256,7 +256,7 @@ export const getScanStats: AsyncHandler = async (
       { $limit: 5 },
     ]);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
         totalScans,
