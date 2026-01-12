@@ -98,7 +98,7 @@ export const getScanResults: AsyncHandler = async (
     });
   } catch (error: any) {
     console.error('Error fetching scan results:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch scan results',
       error: error.message,
@@ -161,7 +161,7 @@ export const getScanResultsByBarcode: AsyncHandler = async (
     });
   } catch (error: any) {
     console.error('Error fetching scan results by barcode:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch scan results',
       error: error.message,
@@ -221,7 +221,7 @@ export const deleteAllScanResults: AsyncHandler = async (
     });
   } catch (error: any) {
     console.error('Error deleting all scan results:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to delete scan results',
       error: error.message,
@@ -266,7 +266,7 @@ export const getScanStats: AsyncHandler = async (
     });
   } catch (error: any) {
     console.error('Error fetching scan statistics:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch scan statistics',
       error: error.message,
