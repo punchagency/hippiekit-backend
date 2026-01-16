@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
 import favoriteRoutes from './routes/favorites.js';
@@ -13,6 +13,46 @@ import connectDB from './config/db.js';
 
 const PORT = process.env.PORT || 8000;
 const app = express();
+
+// === Request Timing Logger Middleware ===
+const requestLogger = (req: Request, res: Response, next: NextFunction) => {
+  const startTime = Date.now();
+  const requestId = Math.random().toString(36).substring(2, 9);
+  const timestamp = new Date().toISOString();
+
+  // Log incoming request
+  console.log(`\n🔵 [${timestamp}] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  console.log(`📥 [${requestId}] ${req.method} ${req.originalUrl}`);
+  if (req.body && Object.keys(req.body).length > 0 && !req.originalUrl.includes('uploadthing')) {
+    console.log(`   📦 Body: ${JSON.stringify(req.body).substring(0, 200)}${JSON.stringify(req.body).length > 200 ? '...' : ''}`);
+  }
+
+  // Capture response finish
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    const statusCode = res.statusCode;
+
+    // Color code based on response time and status
+    let emoji = '✅';
+    let timeColor = '';
+    if (statusCode >= 400) emoji = '❌';
+    else if (statusCode >= 300) emoji = '↪️';
+
+    if (duration > 5000) timeColor = '🔴'; // Very slow (>5s)
+    else if (duration > 2000) timeColor = '🟠'; // Slow (>2s)
+    else if (duration > 500) timeColor = '🟡'; // Medium (>500ms)
+    else timeColor = '🟢'; // Fast (<500ms)
+
+    console.log(`${emoji} [${requestId}] ${req.method} ${req.originalUrl} → ${statusCode}`);
+    console.log(`   ${timeColor} Duration: ${duration}ms`);
+    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+  });
+
+  next();
+};
+
+// Apply request logger middleware (before other middleware)
+app.use(requestLogger);
 
 // === Allowed origins for CORS ===
 const allowedOrigins = [
