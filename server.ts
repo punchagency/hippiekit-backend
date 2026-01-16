@@ -8,6 +8,7 @@ import favoriteRoutes from './routes/favorites.js';
 import wordpressRoutes from './routes/wordpress.js';
 import searchHistoryRoutes from './routes/searchHistory.js';
 import scanResultRoutes from './routes/scanResults.js';
+import notificationRoutes from './routes/notifications.js';
 import { uploadthingRouteHandler } from './routes/uploadthing.js';
 import connectDB from './config/db.js';
 
@@ -21,10 +22,20 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   const timestamp = new Date().toISOString();
 
   // Log incoming request
-  console.log(`\n🔵 [${timestamp}] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  console.log(
+    `\n🔵 [${timestamp}] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+  );
   console.log(`📥 [${requestId}] ${req.method} ${req.originalUrl}`);
-  if (req.body && Object.keys(req.body).length > 0 && !req.originalUrl.includes('uploadthing')) {
-    console.log(`   📦 Body: ${JSON.stringify(req.body).substring(0, 200)}${JSON.stringify(req.body).length > 200 ? '...' : ''}`);
+  if (
+    req.body &&
+    Object.keys(req.body).length > 0 &&
+    !req.originalUrl.includes('uploadthing')
+  ) {
+    console.log(
+      `   📦 Body: ${JSON.stringify(req.body).substring(0, 200)}${
+        JSON.stringify(req.body).length > 200 ? '...' : ''
+      }`
+    );
   }
 
   // Capture response finish
@@ -43,7 +54,9 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
     else if (duration > 500) timeColor = '🟡'; // Medium (>500ms)
     else timeColor = '🟢'; // Fast (<500ms)
 
-    console.log(`${emoji} [${requestId}] ${req.method} ${req.originalUrl} → ${statusCode}`);
+    console.log(
+      `${emoji} [${requestId}] ${req.method} ${req.originalUrl} → ${statusCode}`
+    );
     console.log(`   ${timeColor} Duration: ${duration}ms`);
     console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
   });
@@ -131,6 +144,9 @@ app.use('/api/wordpress', wordpressRoutes);
 app.use('/api/search-history', searchHistoryRoutes);
 // === Scan Results Routes ===
 app.use('/api/scan-results', scanResultRoutes);
+
+// === Notification Routes ===
+app.use('/api/notifications', notificationRoutes);
 // === UploadThing Routes ===
 app.use('/api/uploadthing', uploadthingRouteHandler);
 

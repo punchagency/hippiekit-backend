@@ -14,6 +14,7 @@ interface IPackaging {
 
 // Interface for product recommendations
 interface IRecommendation {
+  id?: string; // WordPress product ID for navigation
   name: string;
   brand: string;
   description: string;
@@ -26,15 +27,17 @@ interface IRecommendation {
 // Main scan result interface
 export interface IScanResult extends Document {
   userId: mongoose.Types.ObjectId;
-  barcode: string;
+  scanType: 'barcode' | 'photo'; // Type of scan
+  barcode?: string; // Optional for photo scans
   productName: string;
   productBrand?: string;
   productImage?: string;
+  scannedImage?: string; // Store the scanned image for photo scans
   safeIngredients: IIngredient[];
   harmfulIngredients: IIngredient[];
   packaging: IPackaging[];
   packagingSummary?: string;
-  packagingSafety?: 'safe' | 'harmful' | 'caution';
+  packagingSafety?: 'safe' | 'harmful' | 'caution' | 'unknown';
   recommendations: IRecommendation[];
   chemicalAnalysis?: {
     safety_score?: number;
@@ -68,7 +71,8 @@ const packagingSchema = new Schema<IPackaging>(
     },
     description: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
   },
   { _id: false }
@@ -76,13 +80,17 @@ const packagingSchema = new Schema<IPackaging>(
 
 const recommendationSchema = new Schema<IRecommendation>(
   {
+    id: {
+      type: String,
+    },
     name: {
       type: String,
       required: true,
     },
     brand: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     description: {
       type: String,
@@ -114,9 +122,14 @@ const scanResultSchema = new Schema<IScanResult>(
       required: true,
       index: true,
     },
+    scanType: {
+      type: String,
+      enum: ['barcode', 'photo'],
+      required: true,
+      default: 'barcode',
+    },
     barcode: {
       type: String,
-      required: true,
       index: true,
     },
     productName: {
@@ -127,6 +140,9 @@ const scanResultSchema = new Schema<IScanResult>(
       type: String,
     },
     productImage: {
+      type: String,
+    },
+    scannedImage: {
       type: String,
     },
     safeIngredients: {
@@ -146,7 +162,7 @@ const scanResultSchema = new Schema<IScanResult>(
     },
     packagingSafety: {
       type: String,
-      enum: ['safe', 'harmful', 'caution'],
+      enum: ['safe', 'harmful', 'caution', 'unknown'],
     },
     recommendations: {
       type: [recommendationSchema],

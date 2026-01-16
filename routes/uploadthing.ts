@@ -30,6 +30,22 @@ export const uploadRouter = {
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
       return { uploadedBy: metadata.userId, url: file.url };
     }),
+
+  // Route for scanned product images (photo and barcode scans)
+  scannedImage: f({
+    image: {
+      maxFileSize: '8MB', // Larger size for high-quality product photos
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async () => {
+      // Allow authenticated users to upload scanned images
+      return { uploadType: 'scannedImage' };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      console.log('Scanned image upload complete:', file.url);
+      return { url: file.url };
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof uploadRouter;

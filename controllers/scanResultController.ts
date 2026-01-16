@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import ScanResult from '../models/ScanResult.js';
+import Notification from '../models/Notification.js';
 
 type AsyncHandler = (req: Request, res: Response) => Promise<any>;
 
@@ -12,10 +13,12 @@ export const saveScanResult: AsyncHandler = async (
 ) => {
   try {
     const {
+      scanType = 'barcode',
       barcode,
       productName,
       productBrand,
       productImage,
+      scannedImage,
       safeIngredients,
       harmfulIngredients,
       packaging,
@@ -26,10 +29,18 @@ export const saveScanResult: AsyncHandler = async (
     } = req.body;
 
     // Validate required fields
-    if (!barcode || !productName) {
+    if (!productName) {
       return res.status(400).json({
         success: false,
-        message: 'Barcode and product name are required',
+        message: 'Product name is required',
+      });
+    }
+
+    // Validate barcode for barcode scans
+    if (scanType === 'barcode' && !barcode) {
+      return res.status(400).json({
+        success: false,
+        message: 'Barcode is required for barcode scans',
       });
     }
 
@@ -39,10 +50,12 @@ export const saveScanResult: AsyncHandler = async (
     // Create scan result
     const scanResult = await ScanResult.create({
       userId,
+      scanType,
       barcode,
       productName,
       productBrand,
       productImage,
+      scannedImage,
       safeIngredients: safeIngredients || [],
       harmfulIngredients: harmfulIngredients || [],
       packaging: packaging || [],
@@ -50,6 +63,37 @@ export const saveScanResult: AsyncHandler = async (
       packagingSafety,
       recommendations: recommendations || [],
       chemicalAnalysis,
+    });
+
+    // Create notification for the scan
+    const harmfulCount = harmfulIngredients?.length || 0;
+    const safeCount = safeIngredients?.length || 0;
+
+    let notificationTitle = 'Product Scanned';
+    let notificationMessage = `${productName} has been analyzed`;
+
+    if (harmfulCount > 0) {
+      notificationTitle = 'Health Concerns Detected';
+      notificationMessage = `${productName} contains ${harmfulCount} potentially harmful ingredient${
+        harmfulCount > 1 ? 's' : ''
+      }`;
+    } else if (safeCount > 0) {
+      notificationTitle = 'Clean Product';
+      notificationMessage = `${productName} contains ${safeCount} safe ingredient${
+        safeCount > 1 ? 's' : ''
+      }`;
+    }
+
+    await Notification.create({
+      userId,
+      type: scanType === 'barcode' ? 'barcode_scan' : 'photo_scan',
+      title: notificationTitle,
+      message: notificationMessage,
+      productName,
+      productImage,
+      scanResultId: scanResult._id,
+      barcode: scanType === 'barcode' ? barcode : undefined,
+      isRead: false,
     });
 
     return res.status(201).json({
